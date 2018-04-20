@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: db_vm
   remote_user: vagrant
   become_method: sudo
   vars:

@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: app_vm
   remote_user: vagrant
   become_method: sudo
   vars:
@@ -9,12 +9,12 @@
     app_dir: /home/{{ login }}/working_app
 
   tasks:
-  - name: create user for app
+  - name: Create application user
     user:
       name: '{{ login }}'
       password: '{{ password }}'
     become: yes
-  - name: install git/java
+  - name: install git and java
     yum:
       name: 
       - git
@@ -22,28 +22,31 @@
       state: present
     become: yes
   
-  - name: clone repository
+  - name: clone git repository
     git:
       repo: 'https://github.com/DmyMi/spring-petclinic'
       dest: "{{ project_dir }}"
     register: latest_version
       
-  - name: inastall and run maven build
+  - name: inastall maven and run application build
     shell: |
       cd {{ project_dir }}
       {{ project_dir }}/mvnw  package
-    register: app_up
-    when: latest_version is changed # It should work, i guess
+    when: latest_version is changed
 
-  - name: mkdir 
-    command: "mkdir -p {{ app_dir }}"
+  - name: mkdir for application user
+    file:
+      path: "{{ app_dir }}"
+      state: directory
     become: yes
-    when: app_up is changed
+    when: latest_version is changed
 
   - name: copy jar file
-    shell: cp {{ project_dir }}/target/*.jar {{ app_dir }}/
+    shell: |
+      cp {{ project_dir }}/target/*.jar {{ app_dir }}/
+      chown {{ login }}:{{ login }} {{ app_dir }}/*.jar
     become: yes
-    when: app_up is changed
+    when: latest_version is changed
 
   - name: run app
     shell: su -c "java -jar {{ app_dir }}/*.jar &" {{ login }}
@@ -55,6 +58,3 @@
       DB_HOST: '{{ lookup("env", "DB_HOST") }}'
       DB_PORT: '{{ lookup("env", "DB_PORT") }}'
 
-
-
-# If string or value start from variable, you have to put it into a quotes

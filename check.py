@@ -5,8 +5,8 @@ import time
 
 url = 'http://127.0.0.1:8080/manage/health'
 
-for i in range(4):
-    time.sleep(20)
+for i in range(6):
+    time.sleep(10)
     try:
         request = urllib.urlopen(url)
         data = json.loads(request.read())

@@ -1,10 +1,6 @@
 #-*- mode: ruby -*-
 #vi: set ft=ruby :
 
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
 Vagrant.configure("2") do |config|
   
   config.vm.box = "bento/centos-7.4"
@@ -13,13 +9,14 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = false
 
   config.vm.define "db_vm" do |db|
-    db.vm.hostname = 'first'
+    db.vm.hostname = 'db'
     db.vm.network :private_network, ip: "192.168.33.10"
     db.vm.provider 'virtualbox' do |vb|
       vb.customize ['modifyvm', :id, '--memory', '256']
     end
     db.vm.provision "ansible" do |ansible|
       ansible.playbook = 'playbookDB.yml'
+
     end 
   end
   
